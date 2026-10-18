@@ -1,0 +1,153 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>Products</title>
+<style>
+body {
+    font-family: Arial;
+    padding: 20px;
+    background: white;
+    color: black;
+}
+.dark {
+    background: #222;
+    color: white;
+}
+.product, .cart-item {
+    border: 1px solid gray;
+    padding: 10px;
+    margin: 10px 0;
+}
+button, input {
+    padding: 8px;
+    margin: 4px;
+}
+</style>
+</head>
+<body>
+
+<h1>Products</h1>
+
+<input type="text" id="search" placeholder="Search products">
+<button id="darkMode">Dark mode</button>
+
+<div id="products"></div>
+
+<h2>Cart</h2>
+<p>Кількість товарів: <span id="count">0</span></p>
+<p>Загальна сума: $<span id="total">0</span></p>
+<div id="cart"></div>
+<button id="emptyCart">Empty cart</button>
+
+<script>
+const products = [
+    { id: 1, name: "Laptop", price: 1200 },
+    { id: 2, name: "Phone", price: 800 },
+    { id: 3, name: "Headphones", price: 200 }
+];
+
+let cart = [];
+
+const productsDiv = document.getElementById("products");
+const cartDiv = document.getElementById("cart");
+const count = document.getElementById("count");
+const total = document.getElementById("total");
+const search = document.getElementById("search");
+
+function renderProducts(list) {
+    productsDiv.replaceChildren();
+
+    list.forEach(product => {
+        const div = document.createElement("div");
+        div.className = "product";
+
+        const name = document.createElement("h3");
+        name.textContent = product.name;
+
+        const price = document.createElement("p");
+        price.textContent = "$" + product.price;
+
+        const button = document.createElement("button");
+        button.textContent = "Add to cart";
+        button.dataset.productId = product.id;
+
+        div.append(name, price, button);
+        productsDiv.append(div);
+    });
+}
+
+function renderCart() {
+    cartDiv.replaceChildren();
+
+    let sum = 0;
+
+    cart.forEach(product => {
+        sum += product.price;
+
+        const div = document.createElement("div");
+        div.className = "cart-item";
+
+        const text = document.createElement("span");
+        text.textContent = product.name + " - $" + product.price + " ";
+
+        const button = document.createElement("button");
+        button.textContent = "Видалити";
+        button.dataset.productId = product.id;
+
+        div.append(text, button);
+        cartDiv.append(div);
+    });
+
+    count.textContent = cart.length;
+    total.textContent = sum;
+}
+
+productsDiv.addEventListener("click", function(event) {
+    if (event.target.tagName === "BUTTON") {
+        const id = Number(event.target.dataset.productId);
+        const product = products.find(p => p.id === id);
+        cart.push(product);
+        renderCart();
+    }
+});
+
+cartDiv.addEventListener("click", function(event) {
+    if (event.target.tagName === "BUTTON") {
+        const id = Number(event.target.dataset.productId);
+        const index = cart.findIndex(p => p.id === id);
+
+        if (index !== -1) {
+            cart.splice(index, 1);
+        }
+
+        renderCart();
+    }
+});
+
+search.addEventListener("input", function() {
+    const text = search.value.toLowerCase();
+
+    const filtered = products.filter(p =>
+        p.name.toLowerCase().includes(text)
+    );
+
+    renderProducts(filtered);
+});
+
+document.getElementById("emptyCart").addEventListener("click", function() {
+    cart = [];
+    renderCart();
+});
+
+document.getElementById("darkMode").addEventListener("click", function() {
+    document.body.classList.toggle("dark");
+});
+
+renderProducts(products);
+renderCart();
+</script>
+
+</body>
+</html>
