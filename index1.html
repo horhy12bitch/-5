@@ -1,0 +1,216 @@
+ 
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мій список цілей</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f4f4f4;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        form, .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+        }
+
+        button {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .goal {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+        }
+
+        .goal-text {
+            flex: 1;
+            overflow-wrap: anywhere;
+        }
+
+        .completed .goal-text {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .active {
+            background: #333;
+            color: white;
+        }
+
+        #error {
+            color: red;
+            margin-bottom: 10px;
+        }
+
+        #empty {
+            text-align: center;
+            color: gray;
+        }
+
+        #counter {
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Мій список цілей</h1>
+
+    <form id="goal-form">
+        <input type="text" id="goal-input" placeholder="Введіть ціль">
+        <button type="submit">Додати</button>
+    </form>
+
+    <div id="error"></div>
+
+    <div id="counter">Усього: 0. Виконано: 0</div>
+
+    <div class="filters">
+        <button type="button" data-filter="all" class="active">Усі</button>
+        <button type="button" data-filter="active">Активні</button>
+        <button type="button" data-filter="completed">Виконані</button>
+    </div>
+
+    <div id="goal-list"></div>
+    <p id="empty">Поки що цілей немає</p>
+
+    <script>
+        const form = document.getElementById("goal-form");
+        const input = document.getElementById("goal-input");
+        const list = document.getElementById("goal-list");
+        const counter = document.getElementById("counter");
+        const error = document.getElementById("error");
+        const empty = document.getElementById("empty");
+        const filterButtons = document.querySelectorAll("[data-filter]");
+
+        let goals = [];
+        let currentFilter = "all";
+
+        function update() {
+            list.innerHTML = "";
+
+            let completedCount = 0;
+
+            goals.forEach(function(goal) {
+                if (goal.completed) {
+                    completedCount++;
+                }
+
+                const item = document.createElement("div");
+                item.className = "goal";
+
+                if (goal.completed) {
+                    item.classList.add("completed");
+                }
+
+                const checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.checked = goal.completed;
+
+                checkbox.addEventListener("change", function() {
+                    goal.completed = checkbox.checked;
+                    update();
+                });
+
+                const text = document.createElement("span");
+                text.className = "goal-text";
+                text.textContent = goal.text;
+
+                const deleteButton = document.createElement("button");
+                deleteButton.textContent = "Видалити";
+
+                deleteButton.addEventListener("click", function() {
+                    goals = goals.filter(function(g) {
+                        return g.id !== goal.id;
+                    });
+                    update();
+                });
+
+                item.append(checkbox, text, deleteButton);
+
+                if (currentFilter === "active" && goal.completed) {
+                    item.hidden = true;
+                }
+
+                if (currentFilter === "completed" && !goal.completed) {
+                    item.hidden = true;
+                }
+
+                list.appendChild(item);
+            });
+
+            counter.textContent = "Усього: " + goals.length +
+                ". Виконано: " + completedCount;
+
+            empty.hidden = goals.length !== 0;
+
+            filterButtons.forEach(function(button) {
+                button.classList.toggle(
+                    "active",
+                    button.dataset.filter === currentFilter
+                );
+            });
+        }
+
+        form.addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const text = input.value.trim();
+
+            if (text.length < 3 || text.length > 100) {
+                error.textContent = "Введіть від 3 до 100 символів";
+                return;
+            }
+
+            error.textContent = "";
+
+            goals.push({
+                id: Date.now() + Math.random(),
+                text: text,
+                completed: false
+            });
+
+            input.value = "";
+            input.focus();
+
+            update();
+        });
+
+        filterButtons.forEach(function(button) {
+            button.addEventListener("click", function() {
+                currentFilter = button.dataset.filter;
+                update();
+            });
+        });
+
+        input.addEventListener("input", function() {
+            error.textContent = "";
+        });
+
+        update();
+    </script>
+
+</body>
+</html>
