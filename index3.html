@@ -1,0 +1,291 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #f4f4f4;
+        }
+
+        form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input, select, button {
+            padding: 10px;
+        }
+
+        input {
+            flex: 1;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        #movies {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        .movie {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .movie img {
+            width: 100%;
+            height: 260px;
+            object-fit: cover;
+        }
+
+        .movie h3 {
+            min-height: 40px;
+        }
+
+        #pages {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 20px 0;
+        }
+
+        .active {
+            background: #333;
+            color: white;
+        }
+
+        #details {
+            background: white;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+
+        #details img {
+            max-width: 200px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            form {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Movie Search</h1>
+
+    <form id="search-form">
+        <input type="text" id="title" placeholder="Enter movie title" required>
+        <select id="type">
+            <option value="">All types</option>
+            <option value="movie">Movie</option>
+            <option value="series">Series</option>
+            <option value="episode">Episode</option>
+        </select>
+        <button type="submit">Search</button>
+    </form>
+
+    <p id="message"></p>
+    <div id="movies"></div>
+    <div id="pages"></div>
+    <div id="details" class="hidden"></div>
+
+    <script>
+        const API_KEY = "YOUR_API_KEY";
+        const API_URL = "https://www.omdbapi.com/";
+
+        const form = document.getElementById("search-form");
+        const titleInput = document.getElementById("title");
+        const typeInput = document.getElementById("type");
+        const movies = document.getElementById("movies");
+        const pages = document.getElementById("pages");
+        const message = document.getElementById("message");
+        const details = document.getElementById("details");
+
+        let currentTitle = "";
+        let currentType = "";
+        let currentPage = 1;
+        let totalPages = 0;
+
+        async function searchMovies(page) {
+            currentPage = page;
+            movies.innerHTML = "";
+            pages.innerHTML = "";
+            details.innerHTML = "";
+            details.classList.add("hidden");
+            message.textContent = "Завантаження...";
+
+            try {
+                const params = new URLSearchParams({
+                    apikey: API_KEY,
+                    s: currentTitle,
+                    page: page
+                });
+
+                if (currentType) {
+                    params.append("type", currentType);
+                }
+
+                const response = await fetch(API_URL + "?" + params);
+                const data = await response.json();
+
+                if (data.Response === "False") {
+                    message.textContent = "Movie not found!";
+                    return;
+                }
+
+                message.textContent = "Знайдено фільмів: " + data.totalResults;
+
+                totalPages = Math.ceil(Number(data.totalResults) / 10);
+
+                data.Search.forEach(function(movie) {
+                    const card = document.createElement("div");
+                    card.className = "movie";
+
+                    const poster = document.createElement("img");
+                    poster.src = movie.Poster !== "N/A"
+                        ? movie.Poster
+                        : "https://placehold.co/200x260?text=No+Poster";
+                    poster.alt = movie.Title;
+
+                    const name = document.createElement("h3");
+                    name.textContent = movie.Title;
+
+                    const year = document.createElement("p");
+                    year.textContent = "Рік: " + movie.Year;
+
+                    const type = document.createElement("p");
+                    type.textContent = "Тип: " + movie.Type;
+
+                    const button = document.createElement("button");
+                    button.textContent = "Details";
+                    button.addEventListener("click", function() {
+                        getDetails(movie.imdbID);
+                    });
+
+                    card.append(poster, name, year, type, button);
+                    movies.appendChild(card);
+                });
+
+                renderPages();
+            } catch (error) {
+                message.textContent = "Помилка завантаження даних.";
+            }
+        }
+
+        function renderPages() {
+            pages.innerHTML = "";
+
+            for (let i = 1; i <= totalPages; i++) {
+                const button = document.createElement("button");
+                button.textContent = i;
+
+                if (i === currentPage) {
+                    button.classList.add("active");
+                }
+
+                button.addEventListener("click", function() {
+                    searchMovies(i);
+                });
+
+                pages.appendChild(button);
+            }
+        }
+
+        async function getDetails(id) {
+            details.classList.remove("hidden");
+            details.textContent = "Завантаження деталей...";
+
+            try {
+                const params = new URLSearchParams({
+                    apikey: API_KEY,
+                    i: id,
+                    plot: "full"
+                });
+
+                const response = await fetch(API_URL + "?" + params);
+                const movie = await response.json();
+
+                if (movie.Response === "False") {
+                    details.textContent = "Не вдалося завантажити інформацію.";
+                    return;
+                }
+
+                details.innerHTML = "";
+
+                const heading = document.createElement("h2");
+                heading.textContent = movie.Title;
+
+                const poster = document.createElement("img");
+                poster.src = movie.Poster !== "N/A"
+                    ? movie.Poster
+                    : "https://placehold.co/200x260?text=No+Poster";
+                poster.alt = movie.Title;
+
+                details.append(heading, poster);
+
+                const fields = [
+                    ["Рік", movie.Year],
+                    ["Жанр", movie.Genre],
+                    ["Режисер", movie.Director],
+                    ["Актори", movie.Actors],
+                    ["Країна", movie.Country],
+                    ["Дата виходу", movie.Released],
+                    ["Тривалість", movie.Runtime],
+                    ["Рейтинг IMDb", movie.imdbRating],
+                    ["Опис", movie.Plot]
+                ];
+
+                fields.forEach(function(field) {
+                    const p = document.createElement("p");
+                    p.textContent = field[0] + ": " + field[1];
+                    details.appendChild(p);
+                });
+
+                details.scrollIntoView({ behavior: "smooth" });
+            } catch (error) {
+                details.textContent = "Помилка завантаження деталей.";
+            }
+        }
+
+        form.addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            currentTitle = titleInput.value.trim();
+            currentType = typeInput.value;
+
+            if (!currentTitle) {
+                message.textContent = "Введіть назву фільму.";
+                return;
+            }
+
+            if (API_KEY === "YOUR_API_KEY") {
+                message.textContent = "Спочатку вставте свій API-ключ у код.";
+                return;
+            }
+
+            searchMovies(1);
+        });
+    </script>
+
+</body>
+</html>
