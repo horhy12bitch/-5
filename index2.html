@@ -1,0 +1,248 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Палітра кольорів</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 25px;
+        }
+
+        input, select, button {
+            padding: 10px;
+        }
+
+        .error {
+            color: red;
+            font-size: 14px;
+        }
+
+        .colors {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .color-card {
+            width: 150px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .color-box {
+            height: 90px;
+        }
+
+        .color-info {
+            padding: 10px;
+            overflow-wrap: anywhere;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Палітра кольорів</h1>
+
+    <form id="color-form">
+        <label for="name">Назва кольору:</label>
+        <input type="text" id="name">
+        <span class="error" id="name-error"></span>
+
+        <label for="type">Тип кольору:</label>
+        <select id="type">
+            <option value="RGB">RGB</option>
+            <option value="RGBA">RGBA</option>
+            <option value="HEX">HEX</option>
+        </select>
+
+        <label for="code">Код кольору:</label>
+        <input type="text" id="code" placeholder="Наприклад: 255,0,0">
+        <span class="error" id="code-error"></span>
+
+        <button type="submit">Save</button>
+    </form>
+
+    <h2>Мої кольори</h2>
+    <div class="colors" id="colors"></div>
+
+    <script>
+        const form = document.getElementById("color-form");
+        const nameInput = document.getElementById("name");
+        const typeInput = document.getElementById("type");
+        const codeInput = document.getElementById("code");
+        const colorsContainer = document.getElementById("colors");
+
+        let colors = [];
+
+        function saveCookie() {
+            document.cookie = "colors=" +
+                encodeURIComponent(JSON.stringify(colors)) +
+                "; max-age=10800; path=/; SameSite=Lax";
+        }
+
+        function loadCookie() {
+            const cookie = document.cookie
+                .split("; ")
+                .find(function(item) {
+                    return item.startsWith("colors=");
+                });
+
+            if (cookie) {
+                try {
+                    const data = JSON.parse(
+                        decodeURIComponent(cookie.substring(7))
+                    );
+
+                    if (Array.isArray(data) && data.every(function(color) {
+                        return color &&
+                            typeof color.name === "string" &&
+                            typeof color.type === "string" &&
+                            typeof color.code === "string" &&
+                            ["RGB", "RGBA", "HEX"].includes(color.type);
+                    })) {
+                        colors = data;
+                    }
+                } catch (error) {
+                    colors = [];
+                }
+            }
+        }
+
+        function validateCode(type, code) {
+            if (type === "RGB") {
+                const match = code.match(
+                    /^\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*$/
+                );
+
+                return match !== null &&
+                    match.slice(1).every(function(value) {
+                        return Number(value) >= 0 &&
+                            Number(value) <= 255;
+                    });
+            }
+
+            if (type === "RGBA") {
+                const match = code.match(
+                    /^\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(0(?:\.\d+)?|1(?:\.0+)?)\s*$/
+                );
+
+                return match !== null &&
+                    match.slice(1, 4).every(function(value) {
+                        return Number(value) >= 0 &&
+                            Number(value) <= 255;
+                    });
+            }
+
+            if (type === "HEX") {
+                return /^#[0-9A-Fa-f]{6}$/.test(code);
+            }
+
+            return false;
+        }
+
+        function renderColors() {
+            colorsContainer.innerHTML = "";
+
+            colors.forEach(function(color) {
+                const card = document.createElement("div");
+                card.className = "color-card";
+
+                const box = document.createElement("div");
+                box.className = "color-box";
+
+                if (color.type === "RGB") {
+                    box.style.backgroundColor = "rgb(" + color.code + ")";
+                } else if (color.type === "RGBA") {
+                    box.style.backgroundColor = "rgba(" + color.code + ")";
+                } else {
+                    box.style.backgroundColor = color.code;
+                }
+
+                const info = document.createElement("div");
+                info.className = "color-info";
+
+                const name = document.createElement("h3");
+                name.textContent = color.name;
+
+                const type = document.createElement("p");
+                type.textContent = color.type;
+
+                const code = document.createElement("p");
+                code.textContent = color.code;
+
+                info.append(name, type, code);
+                card.append(box, info);
+                colorsContainer.appendChild(card);
+            });
+        }
+
+        form.addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const name = nameInput.value.trim();
+            const type = typeInput.value;
+            const code = codeInput.value.trim();
+
+            const nameError = document.getElementById("name-error");
+            const codeError = document.getElementById("code-error");
+
+            nameError.textContent = "";
+            codeError.textContent = "";
+
+            let valid = true;
+
+            if (!name) {
+                nameError.textContent = "Введіть назву кольору";
+                valid = false;
+            } else if (!/^[\p{L}]+$/u.test(name)) {
+                nameError.textContent = "Назва повинна містити тільки літери";
+                valid = false;
+            } else if (colors.some(function(color) {
+                return color.name.toLowerCase() === name.toLowerCase();
+            })) {
+                nameError.textContent = "Така назва вже існує";
+                valid = false;
+            }
+
+            if (!validateCode(type, code)) {
+                codeError.textContent = "Неправильний код кольору для типу " + type;
+                valid = false;
+            }
+
+            if (!valid) {
+                return;
+            }
+
+            colors.push({
+                name: name,
+                type: type,
+                code: code
+            });
+
+            saveCookie();
+            renderColors();
+
+            form.reset();
+            nameInput.focus();
+        });
+
+        loadCookie();
+        renderColors();
+    </script>
+
+</body>
+</html>
