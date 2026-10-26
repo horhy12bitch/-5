@@ -1,0 +1,149 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Взаємодія із сервером</title>
+</head>
+<body>
+    <h2>Завдання 1. Пошук порад</h2>
+    <input type="text" id="keyword" placeholder="Введіть слово">
+    <button onclick="fetchAdviceByKeyword(document.getElementById('keyword').value)">Знайти</button>
+    <div id="advice-container"></div>
+
+    <h2>Завдання 2. Породи собак</h2>
+    <button onclick="fetchDogBreeds()">Завантажити породи</button>
+    <ul id="breed-list"></ul>
+
+    <h2>Завдання 3. Випадкова цитата</h2>
+    <button onclick="fetchRandomQuote()">Отримати цитату</button>
+    <div id="quote-container"></div>
+
+    <h2>Завдання 4. Інформація про країну</h2>
+    <input type="text" id="country-name" placeholder="Введіть назву країни">
+    <button onclick="fetchCountryByName(document.getElementById('country-name').value)">Знайти країну</button>
+    <div id="country-info"></div>
+
+    <script>
+        function fetchAdviceByKeyword(keyword) {
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", "https://api.adviceslip.com/advice/search/" + encodeURIComponent(keyword));
+
+            xhr.onload = function () {
+                const container = document.getElementById("advice-container");
+
+                if (xhr.status === 200) {
+                    const data = JSON.parse(xhr.responseText);
+                    container.innerHTML = "";
+
+                    if (data.slips) {
+                        data.slips.forEach(function (slip) {
+                            const p = document.createElement("p");
+                            p.textContent = slip.advice;
+                            container.appendChild(p);
+                        });
+                    } else {
+                        container.textContent = "Порад не знайдено";
+                    }
+                } else {
+                    container.textContent = "Помилка запиту";
+                }
+            };
+
+            xhr.onerror = function () {
+                document.getElementById("advice-container").textContent = "Помилка з'єднання";
+            };
+
+            xhr.send();
+        }
+
+        function fetchDogBreeds() {
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", "https://dog.ceo/api/breeds/list/all");
+
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    const data = JSON.parse(xhr.responseText);
+                    const list = document.getElementById("breed-list");
+                    list.innerHTML = "";
+
+                    Object.keys(data.message).forEach(function (breed) {
+                        const li = document.createElement("li");
+                        li.textContent = breed;
+                        list.appendChild(li);
+                    });
+                } else {
+                    console.error("Помилка завантаження порід");
+                }
+            };
+
+            xhr.onerror = function () {
+                console.error("Помилка з'єднання");
+            };
+
+            xhr.send();
+        }
+
+        async function fetchRandomQuote() {
+            const container = document.getElementById("quote-container");
+
+            try {
+                const response = await fetch("https://api.api-ninjas.com/v1/quotes", {
+                    headers: {
+                        "X-Api-Key": "YOUR_API_KEY"
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error("Помилка отримання цитати");
+                }
+
+                const data = await response.json();
+                container.textContent = '"' + data[0].quote + '" — ' + data[0].author;
+            } catch (error) {
+                console.error(error);
+                container.textContent = "Не вдалося отримати цитату";
+            }
+        }
+
+        async function fetchCountryByName(countryName) {
+            const container = document.getElementById("country-info");
+
+            try {
+                const response = await fetch(
+                    "https://restcountries.com/v3.1/name/" + encodeURIComponent(countryName)
+                );
+
+                if (!response.ok) {
+                    throw new Error("Країна не знайдена");
+                }
+
+                const data = await response.json();
+                const country = data[0];
+
+                container.innerHTML = "";
+
+                const name = document.createElement("p");
+                name.textContent = "Назва: " + country.name.common;
+
+                const capital = document.createElement("p");
+                capital.textContent = "Столиця: " + (country.capital ? country.capital.join(", ") : "Немає даних");
+
+                const region = document.createElement("p");
+                region.textContent = "Регіон: " + country.region;
+
+                const population = document.createElement("p");
+                population.textContent = "Населення: " + country.population.toLocaleString("uk-UA");
+
+                const flag = document.createElement("p");
+                flag.textContent = "Прапор: " + country.flag;
+
+                container.append(name, capital, region, population, flag);
+            } catch (error) {
+                container.textContent = "Країна не знайдена";
+            }
+        }
+    </script>
+</body>
+</html>
