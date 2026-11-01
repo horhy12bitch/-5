@@ -1,0 +1,166 @@
+
+import React, { Component } from "react";
+
+const container = {
+  maxWidth: "1000px",
+  margin: "30px auto",
+  padding: "25px",
+  fontFamily: "Arial",
+  background: "#f2f4f8",
+  color: "#252535"
+};
+
+const card = {
+  background: "white",
+  padding: "20px",
+  margin: "20px 0",
+  borderRadius: "12px",
+  boxShadow: "0 3px 12px #00000015"
+};
+
+const title = {
+  textAlign: "center",
+  color: "#5145a8"
+};
+
+const photos = {
+  display: "flex",
+  flexWrap: "wrap",
+  gap: "15px"
+};
+
+const image = {
+  width: "250px",
+  height: "160px",
+  objectFit: "cover",
+  borderRadius: "10px"
+};
+
+function CityFunction() {
+  return (
+    <div style={container}>
+      <h1 style={title}>Завдання 1. Місто Вінниця</h1>
+
+      <div style={card}>
+        <h2>Інформація про місто</h2>
+        <p><b>Назва:</b> Вінниця</p>
+        <p><b>Країна:</b> Україна</p>
+        <p><b>Рік заснування:</b> 1363</p>
+        <p>Вінниця — красиве місто в центральній частині України. Воно відоме своїми фонтанами, історичними будівлями та мальовничими вулицями.</p>
+      </div>
+
+      <h2>Пам'ятки міста</h2>
+      <div style={photos}>
+        <img style={image} src="https://images.unsplash.com/photo-1518005020951-eccb494ad742" />
+        <img style={image} src="https://images.unsplash.com/photo-1511818966892-d7d671e672a2" />
+        <img style={image} src="https://images.unsplash.com/photo-1519608487953-e999c86e7455" />
+      </div>
+    </div>
+  );
+}
+
+class CityClass extends Component {
+  render() {
+    return (
+      <div style={container}>
+        <h1 style={title}>Завдання 2. Місто Вінниця</h1>
+
+        <div style={card}>
+          <h2>Інформація про місто</h2>
+          <p><b>Назва:</b> Вінниця</p>
+          <p><b>Країна:</b> Україна</p>
+          <p><b>Рік заснування:</b> 1363</p>
+          <p>Вінниця — красиве місто в центральній частині України. Воно відоме своїми фонтанами, історичними будівлями та мальовничими вулицями.</p>
+        </div>
+
+        <h2>Пам'ятки міста</h2>
+        <div style={photos}>
+          <img style={image} src="https://images.unsplash.com/photo-1518005020951-eccb494ad742" />
+          <img style={image} src="https://images.unsplash.com/photo-1511818966892-d7d671e672a2" />
+          <img style={image} src="https://images.unsplash.com/photo-1519608487953-e999c86e7455" />
+        </div>
+      </div>
+    );
+  }
+}
+
+function BookFunction() {
+  return (
+    <div style={container}>
+      <h1 style={title}>Завдання 3. Улюблена книга</h1>
+
+      <div style={card}>
+        <h2>Маленький принц</h2>
+        <p><b>Автор:</b> Антуан де Сент-Екзюпері</p>
+        <p><b>Жанр:</b> Філософська казка</p>
+        <p><b>Кількість сторінок:</b> 96</p>
+        <p>«Маленький принц» — відома книга про хлопчика, який подорожує різними планетами. Вона розповідає про дружбу, любов та відповідальність.</p>
+      </div>
+
+      <h2>Рецензії читачів</h2>
+
+      <div style={card}>
+        <h3>Олена</h3>
+        <p>Дуже цікава та повчальна книга. Допомагає по-іншому подивитися на життя.</p>
+      </div>
+
+      <div style={card}>
+        <h3>Андрій</h3>
+        <p>Книга легко читається, але має глибокий зміст. Рекомендую всім.</p>
+      </div>
+
+      <div style={card}>
+        <h3>Марія</h3>
+        <p>Мені сподобалася історія про дружбу та відповідальність за тих, кого любиш.</p>
+      </div>
+    </div>
+  );
+}
+
+class BookClass extends Component {
+  render() {
+    return (
+      <div style={container}>
+        <h1 style={title}>Завдання 4. Улюблена книга</h1>
+
+        <div style={card}>
+          <h2>Маленький принц</h2>
+          <p><b>Автор:</b> Антуан де Сент-Екзюпері</p>
+          <p><b>Жанр:</b> Філософська казка</p>
+          <p><b>Кількість сторінок:</b> 96</p>
+          <p>«Маленький принц» — відома книга про хлопчика, який подорожує різними планетами. Вона розповідає про дружбу, любов та відповідальність.</p>
+        </div>
+
+        <h2>Рецензії читачів</h2>
+
+        <div style={card}>
+          <h3>Олена</h3>
+          <p>Дуже цікава та повчальна книга. Допомагає по-іншому подивитися на життя.</p>
+        </div>
+
+        <div style={card}>
+          <h3>Андрій</h3>
+          <p>Книга легко читається, але має глибокий зміст. Рекомендую всім.</p>
+        </div>
+
+        <div style={card}>
+          <h3>Марія</h3>
+          <p>Мені сподобалася історія про дружбу та відповідальність за тих, кого любиш.</p>
+        </div>
+      </div>
+    );
+  }
+}
+
+function App() {
+  return (
+    <div>
+      <CityFunction />
+      <CityClass />
+      <BookFunction />
+      <BookClass />
+    </div>
+  );
+}
+
+export default App;
